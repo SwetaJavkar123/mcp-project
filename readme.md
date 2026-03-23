@@ -35,13 +35,18 @@ Analyzing Sentiment...
 
 ## 📦 Project Structure
 
+```text
 mcp-project/
-├── controller.py # Entry point: orchestrates agents
-├── agents/
-│ ├── init.py
-│ ├── summarizer_agent.py # Summarizes input text
-│ └── sentiment_agent.py # Analyzes sentiment of input text
-├── .venv/ # Python virtual environment (not pushed to Git)
-├── app.py # Streamlit frontend
-├── requirements.txt
-└── README.md
+├── controller.py                # Entry point: orchestrates agents
+├── agents/                      # Agent modules
+│   ├── search_agent.py          # Fetches raw text from a webpage
+│   ├── summarizer_agent.py      # Summarizes input text
+│   └── sentiment_agent.py       # Analyzes sentiment of input text
+├── docs/                        # Documentation
+│   ├── arch.md                  # Architecture overview
+│   └── futurework.md            # Future work and ideas
+├── app.py                       # Streamlit frontend
+├── requirements.txt             # Python dependencies
+├── readme.md                    # Project overview (this file)
+└── .venv/                       # Python virtual environment (not pushed to Git)
+```
