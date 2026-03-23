@@ -1,39 +1,40 @@
-# Future Work
+# Future Work: Hedge Fund Scenario
 
-This document outlines potential directions and enhancements for the Multi-Agent Control Platform (MCP).
+This section describes how the Multi-Agent Control Platform (MCP) can be adapted for a hedge fund or financial trading scenario.
 
-## Possible Extensions
+## Example Agents
 
-- **Add More Agents:**
-  - Question Answering Agent
-  - Topic Extraction Agent
-  - Named Entity Recognition Agent
-  - Translation Agent
+- **MarketDataAgent**: Fetches real-time or historical financial data (stocks, news, etc.) from APIs like Yahoo Finance, Alpha Vantage, or broker APIs.
+- **NewsSentimentAgent**: Analyzes news headlines or articles for sentiment about companies or markets using NLP models.
+- **StrategyAgent**: Runs trading strategies or signals based on data and sentiment (e.g., momentum, mean reversion, event-driven).
+- **RiskAgent**: Assesses portfolio risk, compliance with risk limits, and regulatory constraints.
+- **TradeExecutionAgent**: Places trades via broker APIs and monitors execution quality.
 
-- **Improve Controller Logic:**
-  - Dynamic agent selection based on input
-  - Parallel agent execution
-  - More robust error handling and logging
+## Controller Logic
 
-- **Model Improvements:**
-  - Allow users to select or configure models
-  - Support for larger or more efficient transformer models
-  - Integrate remote API-based models (e.g., OpenAI, Cohere)
+- Orchestrates the workflow: gets data, analyzes sentiment, runs strategies, checks risk, and executes trades.
+- Aggregates results and logs actions for audit and compliance.
 
-- **Frontend Enhancements:**
-  - Richer Streamlit UI (visualizations, user controls)
-  - CLI improvements (argument parsing, output formatting)
+## Extensibility
 
-- **Deployment & Performance:**
-  - Dockerize the application
-  - Add support for cloud deployment (AWS, GCP, Azure)
-  - GPU/TPU acceleration for faster inference
+- Add new agents for alternative data (social media, satellite, etc.).
+- Integrate with portfolio management and reporting systems.
+- Support for backtesting and simulation environments.
 
-- **Testing & Documentation:**
-  - Add unit and integration tests
-  - Expand documentation and code comments
-  - Provide example datasets and use cases
+## Benefits
 
-## Community Contributions
+- **Modular**: Add or swap agents as needed (e.g., new strategies, new data sources).
+- **Scalable**: Each agent can be improved or scaled independently.
+- **Transparent**: Each step is clear and testable.
 
-Contributions are welcome! Please open issues or submit pull requests for new features, bug fixes, or documentation improvements.
+## Example Workflow
+
+1. MarketDataAgent fetches latest prices and news.
+2. NewsSentimentAgent analyzes news for sentiment.
+3. StrategyAgent generates buy/sell signals.
+4. RiskAgent checks if trades comply with risk limits.
+5. TradeExecutionAgent places trades and confirms execution.
+
+---
+
+This approach can be extended to other domains (e.g., insurance, logistics, healthcare) by designing specialized agents for each use case.

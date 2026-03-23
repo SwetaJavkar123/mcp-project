@@ -1,6 +1,54 @@
 # Architecture Overview
 
-This document describes the high-level architecture of the Multi-Agent Control Platform (MCP).
+## Beginner-Friendly Explanation
+
+This project is a simple example of how you can use multiple small AI programs (called “agents”) to work together and solve a bigger problem. It’s written in Python and uses popular AI tools from Hugging Face.
+
+### What does it do?
+Given a web page (like a Wikipedia article), the project:
+1. Fetches the text from the web page.
+2. Summarizes the main points of that text.
+3. Analyzes the sentiment (emotional tone) of the summary (e.g., is it positive or negative?).
+
+### How does it work?
+- There is a controller (main script) that acts like a manager. It tells each agent what to do, in order.
+- There are three main agents (small Python modules):
+  - SearchAgent: Downloads and extracts the text from a web page.
+  - SummarizerAgent: Uses an AI model to create a short summary of the text.
+  - SentimentAgent: Uses another AI model to decide if the summary is positive, negative, or neutral.
+
+### Why is this useful?
+- It shows how to break a big task into smaller, reusable parts (agents).
+- It demonstrates how to use pre-trained AI models for real-world tasks.
+- It’s a good starting point for learning about multi-agent systems and AI orchestration.
+
+### What do you need to know to understand this project?
+- Basic Python: Functions, imports, and running scripts.
+- How to install Python packages (like requests and transformers).
+- Very basic web concepts: What a URL is, what a web page is.
+
+### How do you run it?
+1. Install the required Python packages (see requirements.txt).
+2. Run the main script (controller.py).
+3. The script will print out the summary and sentiment for a sample web page.
+
+### Architecture Diagram
+
+```
++-------------+        +----------------+        +-------------------+        +-------------------+
+|             |        |                |        |                   |        |                   |
+|   User /    +------->+   Controller   +------->+  SearchAgent      +------->+  SummarizerAgent  +
+| Frontend    |        |  (Orchestrator)|        | (Web Scraper)     |        | (Text Summarizer) |
+| (CLI/UI)    |        |                |        |                   |        |                   |
++-------------+        +----------------+        +-------------------+        +-------------------+
+                                                                                         |
+                                                                                         v
+                                                                              +-------------------+
+                                                                              |                   |
+                                                                              | SentimentAgent    |
+                                                                              | (Sentiment Model) |
+                                                                              +-------------------+
+```
 
 ## Purpose
 
