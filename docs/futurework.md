@@ -3,61 +3,68 @@
 This document tracks enhancements that would move the platform closer to
 production-grade hedge fund software.
 
+> **Note:** Items marked ✅ have been implemented. See `plan.md` for details.
+
 ---
 
-## 1. ExecutionAgent — Paper & Live Trading
+## ✅ 1. ExecutionAgent — Paper & Live Trading
 
-- Connect to a broker API (Alpaca, Interactive Brokers, or similar).
-- Support paper-trading mode for safe experimentation.
-- Order types: market, limit, stop-limit.
+- ✅ Paper-trading mode with portfolio state tracking.
+- ✅ Order types: market, limit, stop-limit.
+- Connect to a live broker API (Alpaca, Interactive Brokers).
 - Execution quality monitoring (slippage, fill rates).
 - Integration point: RiskAgent approves → ExecutionAgent places trade.
 
-## 2. NewsSentimentAgent — Financial NLP
+## ✅ 2. NewsSentimentAgent — Financial NLP
 
-- Integrate the existing `SentimentAgent` with financial news feeds.
-- Use FinBERT or a fine-tuned model for finance-specific sentiment.
-- Score each headline as bullish / bearish / neutral with a magnitude.
+- ✅ FinBERT-powered sentiment on yfinance news headlines.
+- ✅ Bullish / bearish / neutral classification with confidence scores.
+- ✅ Automatic fallback to DistilBERT if FinBERT unavailable.
 - Feed sentiment into StrategyAgent as an additional signal factor.
 - Aggregate daily sentiment scores and visualise on the dashboard.
 
-## 3. Multi-Asset & Multi-Timeframe Support
+## ✅ 3. Multi-Asset & Multi-Timeframe Support
 
-- Extend MarketDataAgent to fetch options chains, crypto, forex.
-- Support intraday (1 min, 5 min, 1 hr) data alongside daily.
+- ✅ Crypto (BTC-USD, ETH-USD), forex (EURUSD=X), indices (^GSPC).
+- ✅ Symbol resolver for common names → yfinance tickers.
+- ✅ Intraday intervals (1m, 5m, 1h) alongside daily data.
 - Allow strategy parameters to vary by timeframe.
+- Options chains support.
 
-## 4. LLM-Powered Research Summaries
+## ✅ 4. LLM-Powered Research Summaries
 
-- Use an LLM (OpenAI, Claude, local Llama) to generate natural-language
-  research reports from the CompanyResearchAgent's structured data.
+- ✅ OpenAI-compatible API with template fallback.
+- ✅ Cost controls: LLM_MAX_TOKENS, LLM_DAILY_TOKEN_LIMIT, LLM_MODEL (all in .env).
+- ✅ Automatic fallback to free template when budget exhausted.
 - Auto-generate morning briefings or weekly strategy summaries.
 
-## 5. Alternative Data Agents
+## ✅ 5. Alternative Data Agents
 
-- **SocialSentimentAgent** — analyse Reddit, Twitter/X, StockTwits.
-- **SECFilingAgent** — parse 10-K / 10-Q filings for key changes.
-- **InsiderTradingAgent** — track Form-4 filings and insider activity.
-- **MacroAgent** — ingest economic indicators (CPI, Fed rate, PMI).
+- ✅ SEC filings (10-K, 10-Q, 8-K) via EDGAR.
+- ✅ Insider trading activity.
+- ✅ Institutional holder breakdown.
+- ✅ Social sentiment placeholders.
+- **MacroAgent** — ingest economic indicators (CPI, Fed rate, PMI) via FRED.
 
-## 6. Portfolio Optimisation
+## ✅ 6. Portfolio Optimisation
 
-- Mean-variance (Markowitz) optimisation across held positions.
-- Risk-parity and Black-Litterman allocation models.
-- Rebalancing recommendations with transaction cost awareness.
+- ✅ Mean-variance (Markowitz) optimisation via Monte Carlo efficient frontier.
+- ✅ Risk-parity allocation (equal risk contribution).
+- ✅ Black-Litterman model (market-cap priors + investor views).
+- ✅ Rebalancing recommendations with transaction cost awareness (skip tiny trades).
 
-## 7. Advanced Backtesting
+## ✅ 7. Advanced Backtesting
 
-- Walk-forward analysis and out-of-sample testing.
-- Monte Carlo simulation of strategy returns.
-- Parameter optimisation with grid / random / Bayesian search.
-- Multi-strategy portfolio backtesting.
+- ✅ Walk-forward analysis (rolling train / test windows, out-of-sample validation).
+- ✅ Monte Carlo simulation of strategy returns (percentile bands, prob of profit).
+- ✅ Parameter optimisation with grid search (stop-loss, take-profit, position size).
+- ✅ Multi-strategy portfolio backtesting (equal or custom allocation, best-strategy ranking).
 
-## 8. Testing & CI/CD
+## ✅ 8. Testing & CI/CD
 
-- Unit tests for every agent (`pytest`).
-- Integration tests for the full pipeline.
-- GitHub Actions workflow: lint → test → build.
+- ✅ Comprehensive pytest suite (124 tests across all agents & utilities).
+- ✅ GitHub Actions workflow: lint → test on Python 3.11–3.13.
+- Integration tests for the full pipeline end-to-end.
 
 ## 9. Alerting & Monitoring
 

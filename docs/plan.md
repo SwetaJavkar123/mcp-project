@@ -61,17 +61,70 @@ signals — with clear agent orchestration and a polished dashboard.
 | 6.3 | Multi-symbol comparison with normalised returns & correlation | ✅ Done |
 | 6.4 | Updated README, arch.md, plan.md, futurework.md | ✅ Done |
 
-## Phase 7 🔮  Future Enhancements
+## Phase 7 ✅  Advanced Agents & Infrastructure
 
 | Step | Deliverable | Status |
 |------|-------------|--------|
-| 7.1 | **ExecutionAgent** — paper / live trading via broker API | ✅ Done |
-| 7.2 | **NewsSentimentAgent** — NLP sentiment on financial news | ✅ Done |
-| 7.3 | Multi-asset support (options, crypto, forex) | ✅ Done |
-| 7.4 | LLM-powered research summaries | ✅ Done |
-| 7.5 | Alternative data agents (social media, SEC filings) | ✅ Done |
-| 7.6 | Unit & integration tests | ✅ Done |
-| 7.7 | CI/CD pipeline | ✅ Done |
+| 7.1 | **ExecutionAgent** — paper / live trading (market, limit, stop-limit orders) | ✅ Done |
+| 7.2 | **NewsSentimentAgent** — FinBERT-powered sentiment on financial news | ✅ Done |
+| 7.3 | Multi-asset support (crypto, forex, indices via yfinance + symbol resolver) | ✅ Done |
+| 7.4 | **LLMResearchAgent** — AI-generated research summaries (OpenAI + template fallback) | ✅ Done |
+| 7.5 | **AlternativeDataAgent** — SEC filings, insider trades, institutional holders, social sentiment | ✅ Done |
+| 7.6 | Comprehensive pytest suite (124 tests across all agents & utilities) | ✅ Done |
+| 7.7 | CI/CD pipeline — GitHub Actions (lint + test on Python 3.11–3.13) | ✅ Done |
+
+## Phase 8 ✅  Cost Controls & Configuration
+
+| Step | Deliverable | Status |
+|------|-------------|--------|
+| 8.1 | `.env` file for all API keys and configuration (gitignored) | ✅ Done |
+| 8.2 | OpenAI token limits — `LLM_MAX_TOKENS` (per-call cap, default 500) | ✅ Done |
+| 8.3 | Daily token budget — `LLM_DAILY_TOKEN_LIMIT` (default 10,000) | ✅ Done |
+| 8.4 | Model selection — `LLM_MODEL` (default gpt-4o-mini, cheapest) | ✅ Done |
+| 8.5 | Automatic fallback to free template summary when budget exhausted | ✅ Done |
+| 8.6 | Deprecation warnings fixed (datetime, fillna) | ✅ Done |
+
+## Phase 9 ✅  Portfolio Optimisation & Advanced Backtesting
+
+| Step | Deliverable | Status |
+|------|-------------|--------|
+| 9.1 | **PortfolioOptimizer** — Mean-Variance (Markowitz) efficient frontier | ✅ Done |
+| 9.2 | Risk-Parity allocation (equal risk contribution) | ✅ Done |
+| 9.3 | Black-Litterman model (market-cap priors + investor views) | ✅ Done |
+| 9.4 | Rebalancing engine with transaction cost awareness | ✅ Done |
+| 9.5 | **AdvancedBacktest** — Walk-forward analysis (rolling train/test) | ✅ Done |
+| 9.6 | Monte Carlo simulation (percentile bands, probability of profit) | ✅ Done |
+| 9.7 | Parameter optimisation via grid search | ✅ Done |
+| 9.8 | Multi-strategy portfolio backtesting with allocation control | ✅ Done |
+| 9.9 | 47 new tests (171 total, all passing) | ✅ Done |
+
+---
+
+## Environment Variables (.env)
+
+The `.env` file controls all API keys and cost limits. It is **gitignored**
+to keep secrets out of version control.
+
+```env
+# ─── API Keys ─────────────────────────────────────────────────
+OPENAI_API_KEY=sk-...         # Required for LLM summaries
+
+# ─── OpenAI Cost Controls ────────────────────────────────────
+LLM_MAX_TOKENS=500            # Max tokens per API call
+LLM_DAILY_TOKEN_LIMIT=10000   # Max tokens per day (all calls)
+LLM_MODEL=gpt-4o-mini         # Cheapest model (~$0.15/1M input)
+
+# ─── Optional ────────────────────────────────────────────────
+# LLM_BASE_URL=               # Custom OpenAI-compatible endpoint
+# LLM_API_KEY=                # Key for custom endpoint
+# ALPACA_API_KEY=             # Live trading (paper mode needs none)
+# ALPACA_SECRET=
+# FRED_API_KEY=               # Macroeconomic data
+```
+
+**Cost safety net:** When the daily token limit is reached, the LLM agent
+automatically falls back to the free deterministic template summary — no
+further API calls are made for the rest of the day.
 
 ---
 
@@ -82,7 +135,7 @@ User selects symbol + dates + strategy
              │
              ▼
   ┌──────────────────────┐
-  │   MarketDataAgent    │  ← fetches OHLCV from Yahoo Finance
+  │   MarketDataAgent    │  ← fetches OHLCV (stocks, crypto, forex, indices)
   └──────────┬───────────┘
              │ raw DataFrame
              ▼
@@ -105,10 +158,21 @@ User selects symbol + dates + strategy
              │                              │
              ▼                              ▼
   ┌──────────────────────┐      ┌──────────────────────┐
-  │    BacktestAgent     │      │  Portfolio Summary    │
-  │  (equity curve,      │      │  (positions, P&L)     │
-  │   trade log, metrics)│      │                       │
+  │  NewsSentimentAgent  │      │   ExecutionAgent      │
+  │  (FinBERT headlines) │      │   (paper/live orders) │
   └──────────┬───────────┘      └──────────┬───────────┘
+             │                              │
+             ▼                              ▼
+  ┌──────────────────────┐      ┌──────────────────────┐
+  │  LLMResearchAgent   │      │    BacktestAgent      │
+  │  (AI summaries)      │      │   (equity curve,      │
+  └──────────┬───────────┘      │    trade log, metrics)│
+             │                  └──────────┬───────────┘
+             ▼                              │
+  ┌──────────────────────┐                  │
+  │ AlternativeDataAgent │                  │
+  │ (SEC, insider, social)│                 │
+  └──────────┬───────────┘                  │
              │                              │
              └──────────────┬───────────────┘
                             ▼

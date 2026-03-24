@@ -20,6 +20,17 @@ from __future__ import annotations
 import os
 from datetime import date
 
+# ---------------------------------------------------------------------------
+# Token / cost budget — prevents runaway API spend
+# ---------------------------------------------------------------------------
+# Override via env vars or pass directly to generate_llm_summary()
+DEFAULT_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", 500))
+DAILY_TOKEN_LIMIT  = int(os.environ.get("LLM_DAILY_TOKEN_LIMIT", 10_000))
+DEFAULT_MODEL      = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+
+# Simple in-memory daily counter (resets on app restart)
+_daily_usage: dict[str, int] = {"tokens": 0, "date": ""}
+
 
 # ---------------------------------------------------------------------------
 # Template-based fallback (no LLM needed)
@@ -140,18 +151,41 @@ def _build_prompt(report: dict) -> str:
     return prompt
 
 
-def generate_llm_summary(report: dict, model: str = "gpt-4o-mini") -> str:
+def generate_llm_summary(
+    report: dict,
+    model: str | None = None,
+    max_tokens: int | None = None,
+) -> str:
     """
     Generate an LLM-powered research summary.
 
-    Uses the OpenAI Python client (works with any OpenAI-compatible endpoint).
-    Falls back to template summary if no API key is configured.
+    Cost controls (all configurable in .env):
+      - LLM_MAX_TOKENS    → caps each response  (default 500)
+      - LLM_DAILY_TOKEN_LIMIT → daily budget     (default 10,000)
+      - LLM_MODEL          → model to use        (default gpt-4o-mini, cheapest)
+
+    Falls back to template summary if no API key is configured or budget is exhausted.
     """
     api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("LLM_API_KEY")
     base_url = os.environ.get("LLM_BASE_URL")
 
     if not api_key:
         return _template_summary(report)
+
+    # ── Budget check ────────────────────────────────────────────────────
+    today = date.today().isoformat()
+    if _daily_usage["date"] != today:
+        _daily_usage["tokens"] = 0
+        _daily_usage["date"] = today
+
+    if _daily_usage["tokens"] >= DAILY_TOKEN_LIMIT:
+        return _template_summary(report) + (
+            f"\n\n_⚠️ Daily token limit reached ({DAILY_TOKEN_LIMIT:,} tokens). "
+            "Using template summary to avoid extra cost._"
+        )
+
+    token_cap = max_tokens or DEFAULT_MAX_TOKENS
+    resolved_model = model or DEFAULT_MODEL
 
     try:
         from openai import OpenAI
@@ -162,14 +196,20 @@ def generate_llm_summary(report: dict, model: str = "gpt-4o-mini") -> str:
 
         client = OpenAI(**client_kwargs)
         response = client.chat.completions.create(
-            model=model,
+            model=resolved_model,
             messages=[
                 {"role": "system", "content": "You are a senior equity research analyst."},
                 {"role": "user", "content": _build_prompt(report)},
             ],
-            max_tokens=800,
+            max_tokens=token_cap,
             temperature=0.4,
         )
+
+        # Track usage
+        usage = response.usage
+        if usage:
+            _daily_usage["tokens"] += usage.total_tokens
+
         return response.choices[0].message.content
 
     except ImportError:

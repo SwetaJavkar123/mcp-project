@@ -17,6 +17,9 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Environment variables
+.env
+
 # Testing / Coverage
 .pytest_cache/
 htmlcov/

@@ -47,6 +47,13 @@ from agents.news_sentiment_agent import get_sentiment_report
 from agents.llm_research_agent import generate_llm_summary
 from agents.execution_agent import ExecutionAgent, TradingMode, OrderType
 from agents.alternative_data_agent import get_alternative_data_report
+from agents.portfolio_optimizer import optimise_portfolio, OptimiserConfig
+from agents.advanced_backtest import (
+    walk_forward_analysis, WalkForwardConfig,
+    monte_carlo_simulation, MonteCarloConfig,
+    optimise_parameters, ParamGrid,
+    multi_strategy_backtest,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -80,6 +87,7 @@ def run_full_analysis(
     include_sentiment: bool = True,
     include_llm_summary: bool = True,
     include_alt_data: bool = False,
+    include_advanced_backtest: bool = False,
     verbose: bool = False,
 ) -> dict | None:
     """
@@ -231,6 +239,61 @@ def run_full_analysis(
         except Exception as exc:
             _log(f"⚠️  Alternative data failed: {exc}")
 
+    # ── 10. Advanced backtesting (walk-forward + Monte Carlo) ───────────
+    advanced_bt = None
+    if include_advanced_backtest and bt_result is not None:
+        _log("🔬  Running advanced backtesting …")
+        try:
+            returns = df["Close"].pct_change().dropna()
+
+            # Walk-forward
+            wf_config = WalkForwardConfig(
+                train_window=min(60, len(df) // 3),
+                test_window=min(20, len(df) // 6),
+                step_size=min(20, len(df) // 6),
+                strategy_type=strategy_type,
+            )
+            wf_result = walk_forward_analysis(df, symbol=symbol, wf_config=wf_config, bt_config=backtest_config)
+
+            # Monte Carlo
+            mc_result = monte_carlo_simulation(returns, MonteCarloConfig(
+                num_simulations=500, num_days=252, initial_capital=100_000.0,
+            ))
+
+            # Parameter optimisation
+            signalled_df = generate_signals(df.copy(), strategy_type=strategy_type)
+            param_result = optimise_parameters(signalled_df, symbol=symbol, param_grid=ParamGrid(
+                stop_loss_pct=[0.03, 0.05, 0.07],
+                take_profit_pct=[0.06, 0.10, 0.15],
+                position_size_pct=[0.05, 0.10],
+            ))
+
+            # Multi-strategy comparison
+            multi_strat = multi_strategy_backtest(df, symbol=symbol)
+
+            advanced_bt = {
+                "walk_forward": wf_result,
+                "monte_carlo": {
+                    "statistics": mc_result["statistics"],
+                    "final_values": mc_result["final_values"],
+                },
+                "param_optimisation": {
+                    "best_params": param_result["best_params"],
+                    "best_result": param_result.get("best_result", {}),
+                    "total_combos": param_result.get("total_combos_tested", 0),
+                },
+                "multi_strategy": {
+                    "comparison": multi_strat["comparison"],
+                    "best_strategy": multi_strat["best_strategy"],
+                    "combined_summary": multi_strat["combined_summary"],
+                },
+            }
+            _log(f"✅  Advanced backtesting done — "
+                 f"WF folds: {wf_result['combined_summary']['num_folds']}, "
+                 f"MC prob profit: {mc_result['statistics'].get('prob_profit', 'N/A')}%\n")
+        except Exception as exc:
+            _log(f"⚠️  Advanced backtesting failed: {exc}")
+
     result = {
         "symbol": symbol,
         "period": {"start": start_date, "end": end_date},
@@ -247,6 +310,7 @@ def run_full_analysis(
         "sentiment_report": sentiment_report,
         "llm_summary": llm_summary,
         "alternative_data": alt_data,
+        "advanced_backtest": advanced_bt,
     }
 
     _log(f"{'='*60}")
