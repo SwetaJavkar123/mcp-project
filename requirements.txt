@@ -1,4 +1,14 @@
+# Core
+streamlit
+pandas
+numpy
+yfinance
+
+# NLP agents (original demo)
 transformers
 beautifulsoup4
 requests
-streamlit
+
+# Testing
+pytest
+pytest-cov

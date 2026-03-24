@@ -11,13 +11,14 @@ from utils_marketdata import (
     get_basic_statistics,
     get_popular_symbols,
 )
+from agents.strategy_agent import generate_signals, get_strategy_description
 
 st.set_page_config(page_title="Market Data Agent", layout="wide")
 st.title("📈 Market Data Agent - Advanced Analysis")
 st.subheader("Technical Analysis & Portfolio Comparison")
 
 # Tabs for different features
-tab1, tab2, tab3 = st.tabs(["Technical Analysis", "Advanced Indicators", "Multi-Symbol Comparison"])
+tab1, tab2, tab3, tab4 = st.tabs(["Technical Analysis", "Advanced Indicators", "Strategy Signals", "Multi-Symbol Comparison"])
 
 with tab1:
     st.markdown("### Technical Analysis (RSI + Bollinger Bands)")
@@ -114,6 +115,94 @@ with tab2:
                 st.warning("No data found for the given symbol and date range.")
 
 with tab3:
+    st.markdown("### Trading Strategy Signals")
+    st.markdown("Generate Buy/Sell signals using different trading strategies")
+    
+    popular_symbols = get_popular_symbols()
+    symbol = st.selectbox("Select stock symbol:", options=popular_symbols, index=0, key="symbol_strategy")
+    custom_symbol = st.text_input("Or enter another symbol:", key="custom_strategy")
+    if custom_symbol:
+        symbol = custom_symbol.upper()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        start = st.date_input("Start date", key="start_strategy")
+    with col2:
+        end = st.date_input("End date", key="end_strategy")
+
+    strategy_type = st.selectbox(
+        "Select strategy:",
+        options=["combined", "momentum", "mean_reversion", "trend_following"],
+        format_func=lambda x: x.replace("_", " ").title(),
+        key="strategy_type"
+    )
+
+    if st.button("Generate Signals"):
+        with st.spinner(f"Generating {strategy_type} signals for {symbol}..."):
+            df = fetch_and_process_data(symbol, start=start.strftime("%Y-%m-%d"), end=end.strftime("%Y-%m-%d"))
+            if df is not None:
+                st.success(f"Strategy signals for {symbol}")
+                
+                # Calculate all indicators
+                df = calculate_moving_average(df, 20)
+                df = calculate_rsi(df, window=14)
+                df = calculate_bollinger_bands(df, window=20, num_std=2)
+                df = calculate_macd(df)
+                df = calculate_stochastic(df)
+                df = calculate_atr(df)
+                df = calculate_adx(df)
+                
+                # Generate signals
+                df = generate_signals(df, strategy_type=strategy_type)
+                
+                # Strategy description
+                st.markdown(f"#### Strategy: {strategy_type.replace('_', ' ').title()}")
+                st.info(get_strategy_description(strategy_type))
+                
+                # Plot price with signals
+                st.markdown("#### Price Chart with Buy/Sell Signals")
+                signal_df = df[["Close", "MA"]].copy()
+                
+                # Add signals to chart
+                buy_signals = df[df["Signal"] == "BUY"][["Close"]]
+                sell_signals = df[df["Signal"] == "SELL"][["Close"]]
+                
+                st.line_chart(signal_df)
+                
+                if not buy_signals.empty:
+                    st.write(f"**Buy Signals:** {len(buy_signals)}")
+                    st.dataframe(buy_signals)
+                
+                if not sell_signals.empty:
+                    st.write(f"**Sell Signals:** {len(sell_signals)}")
+                    st.dataframe(sell_signals)
+                
+                # Signal statistics
+                st.markdown("#### Signal Statistics")
+                buy_count = (df["Signal"] == "BUY").sum()
+                sell_count = (df["Signal"] == "SELL").sum()
+                hold_count = (df["Signal"] == "HOLD").sum()
+                avg_confidence = df[df["Signal"] != "HOLD"]["Confidence"].mean()
+                
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Buy Signals", buy_count)
+                with col2:
+                    st.metric("Sell Signals", sell_count)
+                with col3:
+                    st.metric("Hold Signals", hold_count)
+                with col4:
+                    st.metric("Avg Confidence", f"{avg_confidence:.1f}%")
+                
+                # Full data table
+                st.markdown("#### Full Data with Signals")
+                display_cols = ["Close", "MA", "RSI", "MACD", "Signal", "Confidence"]
+                display_cols = [col for col in display_cols if col in df.columns]
+                st.dataframe(df[display_cols].dropna())
+            else:
+                st.warning("No data found for the given symbol and date range.")
+
+with tab4:
     st.markdown("### Multi-Symbol Comparison")
     symbols_to_compare = st.multiselect(
         "Select symbols to compare:",
