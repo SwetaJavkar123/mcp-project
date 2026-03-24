@@ -12,3 +12,6 @@ requests
 # Testing
 pytest
 pytest-cov
+
+# Optional: LLM-powered summaries (set OPENAI_API_KEY to enable)
+# openai

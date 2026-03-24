@@ -39,6 +39,10 @@ controller orchestrates the full pipeline.
 | **CompanyResearchAgent** | `agents/company_research_agent.py` | Fundamentals, scoring, peer comparison, news |
 | **RiskAgent** | `agents/risk_agent.py` | VaR, Sharpe, position sizing, trade validation |
 | **BacktestAgent** | `agents/backtest_agent.py` | Historical simulation with equity curve, win rate, drawdown |
+| **ExecutionAgent** | `agents/execution_agent.py` | Paper / live trading with market, limit, stop-limit orders |
+| **NewsSentimentAgent** | `agents/news_sentiment_agent.py` | FinBERT-powered sentiment on financial news headlines |
+| **LLMResearchAgent** | `agents/llm_research_agent.py` | AI-generated research summaries (OpenAI / template fallback) |
+| **AlternativeDataAgent** | `agents/alternative_data_agent.py` | SEC filings, insider trades, institutional holders |
 | **SearchAgent** | `agents/search_agent.py` | Web scraping (original NLP demo) |
 | **SummarizerAgent** | `agents/summarizer_agent.py` | Text summarisation (original NLP demo) |
 | **SentimentAgent** | `agents/sentiment_agent.py` | Sentiment analysis (original NLP demo) |

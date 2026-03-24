@@ -65,13 +65,13 @@ signals — with clear agent orchestration and a polished dashboard.
 
 | Step | Deliverable | Status |
 |------|-------------|--------|
-| 7.1 | **ExecutionAgent** — paper / live trading via broker API | 🔮 Planned |
-| 7.2 | **NewsSentimentAgent** — NLP sentiment on financial news | 🔮 Planned |
-| 7.3 | Multi-asset support (options, crypto, forex) | 🔮 Planned |
-| 7.4 | LLM-powered research summaries | 🔮 Planned |
-| 7.5 | Alternative data agents (social media, SEC filings) | 🔮 Planned |
+| 7.1 | **ExecutionAgent** — paper / live trading via broker API | ✅ Done |
+| 7.2 | **NewsSentimentAgent** — NLP sentiment on financial news | ✅ Done |
+| 7.3 | Multi-asset support (options, crypto, forex) | ✅ Done |
+| 7.4 | LLM-powered research summaries | ✅ Done |
+| 7.5 | Alternative data agents (social media, SEC filings) | ✅ Done |
 | 7.6 | Unit & integration tests | ✅ Done |
-| 7.7 | CI/CD pipeline | 🔮 Planned |
+| 7.7 | CI/CD pipeline | ✅ Done |
 
 ---
 

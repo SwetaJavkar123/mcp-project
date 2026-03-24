@@ -43,6 +43,10 @@ from agents.risk_agent import (
     calculate_portfolio_summary,
 )
 from agents.backtest_agent import run_backtest, BacktestConfig, trades_to_dataframe
+from agents.news_sentiment_agent import get_sentiment_report
+from agents.llm_research_agent import generate_llm_summary
+from agents.execution_agent import ExecutionAgent, TradingMode, OrderType
+from agents.alternative_data_agent import get_alternative_data_report
 
 
 # ---------------------------------------------------------------------------
@@ -73,6 +77,9 @@ def run_full_analysis(
     portfolio: Portfolio | None = None,
     backtest: bool = True,
     backtest_config: BacktestConfig | None = None,
+    include_sentiment: bool = True,
+    include_llm_summary: bool = True,
+    include_alt_data: bool = False,
     verbose: bool = False,
 ) -> dict | None:
     """
@@ -190,6 +197,40 @@ def run_full_analysis(
             _log(f"⚠️  Backtest failed: {exc}")
 
     # ── Package result ──────────────────────────────────────────────────────
+
+    # ── 7. News sentiment ───────────────────────────────────────────────────
+    sentiment_report = None
+    if include_sentiment:
+        _log("📰  Analysing news sentiment …")
+        try:
+            sentiment_report = get_sentiment_report(symbol)
+            overall = sentiment_report["summary"]["overall"]
+            _log(f"✅  Sentiment: {overall} "
+                 f"({sentiment_report['summary']['bullish']}↑ "
+                 f"{sentiment_report['summary']['bearish']}↓)\n")
+        except Exception as exc:
+            _log(f"⚠️  Sentiment analysis failed: {exc}")
+
+    # ── 8. LLM research summary ────────────────────────────────────────────
+    llm_summary = None
+    if include_llm_summary and research:
+        _log("🤖  Generating AI research summary …")
+        try:
+            llm_summary = generate_llm_summary(research)
+            _log("✅  AI summary ready.\n")
+        except Exception as exc:
+            _log(f"⚠️  LLM summary failed: {exc}")
+
+    # ── 9. Alternative data ─────────────────────────────────────────────────
+    alt_data = None
+    if include_alt_data:
+        _log("📂  Fetching alternative data …")
+        try:
+            alt_data = get_alternative_data_report(symbol)
+            _log("✅  Alternative data ready.\n")
+        except Exception as exc:
+            _log(f"⚠️  Alternative data failed: {exc}")
+
     result = {
         "symbol": symbol,
         "period": {"start": start_date, "end": end_date},
@@ -203,6 +244,9 @@ def run_full_analysis(
         "risk_validation": risk_result,
         "portfolio_summary": port_summary,
         "backtest_results": bt_result,
+        "sentiment_report": sentiment_report,
+        "llm_summary": llm_summary,
+        "alternative_data": alt_data,
     }
 
     _log(f"{'='*60}")

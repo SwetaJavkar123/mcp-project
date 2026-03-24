@@ -25,7 +25,7 @@ def calculate_moving_average(df, window):
     :return: DataFrame with MA column added
     """
     df["MA"] = df["Close"].rolling(window=window).mean()
-    df["MA"] = df["MA"].fillna(method="bfill")
+    df["MA"] = df["MA"].bfill()
     return df
 
 def get_basic_statistics(df):
